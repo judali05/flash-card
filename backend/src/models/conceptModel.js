@@ -1,14 +1,14 @@
 const db = require('../db');
 
 async function getAllConcepts() {
-  const [rows] = await db.query('SELECT * FROM concepts');
+  const [rows] = await db.query('SELECT * FROM words');
   return rows;
 }
 
-async function createConcept({ title, description, tags }) {
+async function createConcept({ english, spanish }) {
   const [result] = await db.query(
-    'INSERT INTO concepts (title, description, tags) VALUES (?, ?, ?)',
-    [title, description, tags]
+    'INSERT INTO words (english, spanish) VALUES (?, ?)',
+    [english, spanish]
   );
   return result.insertId;
 }

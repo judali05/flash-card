@@ -10,11 +10,11 @@ async function getConcepts(req, res) {
 }
 
 async function addConcept(req, res) {
-  const { title, description, tags } = req.body;
-  if (!title || !description) return res.status(400).json({ error: 'Missing fields' });
+  const { english, spanish } = req.body;
+  if (!english || !spanish) return res.status(400).json({ error: 'Missing fields' });
 
   try {
-    const id = await model.createConcept({ title, description, tags });
+    const id = await model.createConcept({ english, spanish });
     res.status(201).json({ id });
   } catch (err) {
     res.status(500).json({ error: 'Error adding concept' });
