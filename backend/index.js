@@ -7,25 +7,28 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Ruta para obtener todas las palabras
 app.get('/api/words', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT * FROM words');
-    res.json(rows);
-  } catch (error) {
-    console.error('Error al obtener las palabras:', error);
-    res.status(500).json({ error: 'Error al obtener las palabras' });
-  }
-});
+  const { status, category } = req.query;
 
-// Ruta para obtener todas las categorías
-app.get('/api/categories', async (req, res) => {
+  let query = 'SELECT * FROM words WHERE 1=1';
+  const params = [];
+
+  if (status) {
+    query += ' AND status = ?';
+    params.push(status);
+  }
+
+  if (category) {
+    query += ' AND category_id = ?';
+    params.push(category);
+  }
+
   try {
-    const [rows] = await pool.query('SELECT * FROM categories');
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (error) {
-    console.error('Error al obtener las categorías:', error);
-    res.status(500).json({ error: 'Error al obtener las categorías' });
+    console.error('Error al obtener las palabras filtradas:', error);
+    res.status(500).json({ error: 'Error al obtener las palabras' });
   }
 });
 

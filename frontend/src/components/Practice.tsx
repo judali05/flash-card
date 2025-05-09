@@ -1,6 +1,6 @@
 // src/components/Practice.tsx
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect} from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import { Word } from "../types";
 
@@ -21,11 +21,15 @@ const Practice = () => {
   const [isCorrect, setIsCorrect] = useState(false);
   const navigate = useNavigate();
 
+  const [searchParams] = useSearchParams();
+  const statusParam = searchParams.get("status");
+
+
   // 🔁 Cargar palabras del backend
   useEffect(() => {
     const fetchWords = async () => {
       try {
-        const res = await api.get<Word[]>("/words");
+        const res = await api.get<Word[]>(statusParam ? `/words?status=${statusParam}` : "/words");
         setWords(res.data);
 
         const savedOrder = localStorage.getItem("shuffledOrder");
