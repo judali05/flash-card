@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Word } from "../types";
+import { Word, Category } from "../types";
 
 const Home = () => {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [words, setWords] = useState<Word[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -13,12 +15,27 @@ const Home = () => {
     { label: "En proceso", value: "en_proceso", emoji: "⚙️" },
     { label: "Por aprender", value: "por_aprender", emoji: "📚" },
   ];
-  
+
+  useEffect(() => {
+    fetch("http://localhost:3001/api/categories")
+      .then((res) => res.json())
+      .then(setCategories)
+      .catch((err) => console.error("Error al obtener categorías:", err));
+  }, []);
+
   useEffect(() => {
     if (!selectedStatus) return;
 
+    setWords([]);
     setLoading(true);
-    fetch(`http://localhost:3001/api/words?status=${selectedStatus}`)
+
+    const params = new URLSearchParams();
+    params.append("status", selectedStatus);
+    if (selectedCategory !== null) {
+      params.append("category_id", String(selectedCategory));
+    }
+
+    fetch(`http://localhost:3001/api/words?${params.toString()}`)
       .then((res) => res.json())
       .then(setWords)
       .catch((err) => {
@@ -26,51 +43,94 @@ const Home = () => {
         setWords([]);
       })
       .finally(() => setLoading(false));
-  }, [selectedStatus]);
+  }, [selectedStatus, selectedCategory]);
+
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-blue-50 px-4 py-8">
+    <div className="min-h-screen flex flex-col items-center justify-start bg-blue-50 px-4 py-8">
       <h1 className="text-4xl font-bold mb-4 text-blue-800">Bienvenido a FlashCart</h1>
       <p className="text-lg text-gray-600 mb-8 text-center max-w-xl">
         Practica vocabulario en inglés con tarjetas interactivas. ¡Mejora tu memoria y diviértete!
       </p>
+
+      {/* Botones de estado (como filtros) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 w-full max-w-2xl">
+        {statuses.map((s) => (
+          <button
+            key={s.value}
+            className={`flex flex-col items-center justify-center p-4 rounded-xl shadow text-center transition border-2
+              ${
+                selectedStatus === s.value
+                  ? "bg-blue-100 border-blue-500"
+                  : "bg-white border-transparent hover:border-blue-300"
+              }`}
+            onClick={() => setSelectedStatus(s.value)}
+          >
+            <span className="text-4xl mb-2">{s.emoji}</span>
+            <span className="font-semibold text-blue-800">{s.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="mb-6 w-full max-w-sm">
+        <label className="block text-blue-800 font-semibold mb-1" htmlFor="category">
+          Selecciona una categoría:
+        </label>
+        <select
+          id="category"
+          value={selectedCategory ?? ""}
+          onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
+          className="w-full border border-gray-300 rounded-xl p-2"
+        >
+          <option value="">Todas</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+
+      {/* Botón de iniciar práctica */}
       <button
-        className="bg-blue-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-700 transition mb-6"
-        onClick={() => navigate("/practice")}
+        className={`bg-blue-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-700 transition mb-8 ${
+          !selectedStatus ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+        disabled={!selectedStatus}
+        onClick={() => {
+          if (!selectedStatus) return;
+
+          const query: Record<string, string> = { status: selectedStatus };
+          if (selectedCategory !== null) {
+            query.category_id = String(selectedCategory);
+          }
+
+          const params = new URLSearchParams(query);
+          navigate(`/practice?${params.toString()}`);
+        }}
       >
         Comenzar práctica
       </button>
 
-      {/* Tarjetas de estado */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        {statuses.map((s) => (
-          <div
-            key={s.value}
-            className={`cursor-pointer border p-4 rounded-xl text-center shadow transition ${
-              selectedStatus === s.value ? "bg-blue-100 border-blue-400" : "bg-white"
-            }`}
-            onClick={() => navigate(`/practice?status=${s.value}`)}
-          >
-            <div className="text-3xl">{s.emoji}</div>
-            <div className="mt-2 font-semibold">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
       {/* Lista de palabras */}
       {selectedStatus && (
         <div className="w-full max-w-xl">
-          <h2 className="text-xl font-bold mb-2 text-blue-800">Palabras a practicar</h2>
+          <h2 className="text-xl font-bold mb-2 text-blue-800">Palabras con estado: <span className="capitalize">{selectedStatus.replace("_", " ")}</span></h2>
           {loading ? (
             <p className="text-gray-600">Cargando palabras...</p>
           ) : words.length > 0 ? (
-            <ul className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {words.map((word) => (
-                <li key={word.id} className="p-3 border rounded bg-white shadow-sm">
-                  {word.english} - {word.spanish}
-                </li>
+                <div
+                  key={word.id}
+                  className="bg-white border rounded-xl p-4 shadow hover:shadow-md transition"
+                >
+                  <p className="text-blue-800 font-bold text-lg">{word.english}</p>
+                  <p className="text-gray-600">{word.spanish}</p>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
             <p className="text-gray-600">No hay palabras con este estado aún.</p>
           )}
@@ -81,4 +141,3 @@ const Home = () => {
 };
 
 export default Home;
-

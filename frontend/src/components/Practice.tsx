@@ -1,5 +1,4 @@
-// src/components/Practice.tsx
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import { Word } from "../types";
@@ -19,49 +18,86 @@ const Practice = () => {
   const [userInput, setUserInput] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const statusParam = searchParams.get("status");
+  const categoryParam = searchParams.get("category");
+  const limitParam = searchParams.get("limit");
 
-
-  // 🔁 Cargar palabras del backend
   useEffect(() => {
     const fetchWords = async () => {
       try {
-        const res = await api.get<Word[]>(statusParam ? `/words?status=${statusParam}` : "/words");
+        const queryParams = new URLSearchParams();
+        if (statusParam) queryParams.append("status", statusParam);
+        if (categoryParam) queryParams.append("category", categoryParam);
+        if (limitParam) queryParams.append("limit", limitParam);
+
+        const res = await api.get<Word[]>(`/words?${queryParams.toString()}`);
+
+        if (res.data.length === 0) {
+          setError("No hay palabras disponibles para practicar con este filtro.");
+          return;
+        }
+
         setWords(res.data);
 
         const savedOrder = localStorage.getItem("shuffledOrder");
         const savedIndex = localStorage.getItem("currentCardIndex");
 
         if (savedOrder) {
-          setShuffledOrder(JSON.parse(savedOrder));
+          const parsedOrder = JSON.parse(savedOrder);
+          if (Array.isArray(parsedOrder) && parsedOrder.length === res.data.length) {
+            setShuffledOrder(parsedOrder);
+          } else {
+            const order = shuffleArray([...Array(res.data.length).keys()]);
+            setShuffledOrder(order);
+            localStorage.setItem("shuffledOrder", JSON.stringify(order));
+          }
         } else {
           const order = shuffleArray([...Array(res.data.length).keys()]);
           setShuffledOrder(order);
           localStorage.setItem("shuffledOrder", JSON.stringify(order));
         }
 
-        if (savedIndex) {
+        if (savedIndex && parseInt(savedIndex) < res.data.length) {
           setCurrentIndex(parseInt(savedIndex));
+        } else {
+          setCurrentIndex(0);
         }
       } catch (error) {
         console.error("Error cargando palabras", error);
+        setError("Hubo un problema al cargar las palabras.");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchWords();
-  }, []);
+  }, [statusParam]); // <-- AÑADIDO AQUÍ
 
-  if (shuffledOrder.length === 0 || words.length === 0 || shuffledOrder[currentIndex] === undefined) {
+
+  if (loading) {
     return <div className="text-center mt-10">Cargando...</div>;
   }
 
-  const currentCard = words[shuffledOrder[currentIndex]];
+  if (error) {
+    return <div className="text-center mt-10 text-red-600">{error}</div>;
+  }
+
+  const currentCard =
+    words.length > 0 &&
+    shuffledOrder.length > 0 &&
+    currentIndex < shuffledOrder.length
+      ? words[shuffledOrder[currentIndex]]
+      : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!currentCard) return;
 
     const normalizedUserInput = userInput.trim().toLowerCase();
     const normalizedAnswer = currentCard.spanish.toLowerCase();
@@ -116,9 +152,11 @@ const Practice = () => {
         </p>
       </div>
 
-      <div className="bg-blue-100 rounded-2xl px-10 py-6 shadow mb-4 text-2xl text-blue-800">
-        {currentCard.english}
-      </div>
+      {currentCard && (
+        <div className="bg-blue-100 rounded-2xl px-10 py-6 shadow mb-4 text-2xl text-blue-800">
+          {currentCard.english}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="mb-4 w-full max-w-md">
         <input
@@ -130,7 +168,7 @@ const Practice = () => {
         />
       </form>
 
-      {showFeedback && (
+      {showFeedback && currentCard && (
         <div className={`text-xl font-semibold mb-4 ${isCorrect ? "text-green-600" : "text-red-600"}`}>
           {isCorrect ? "¡Correcto!" : `Incorrecto. Respuesta: ${currentCard.spanish}`}
         </div>
