@@ -1,6 +1,6 @@
 const db = require('../db');
 
-async function getAllWords({ status, category_id, limit }) {
+async function getWords({ status, category_id, limit }) {
   let query = 'SELECT * FROM words WHERE 1=1';
   const params = [];
 
@@ -23,7 +23,30 @@ async function getAllWords({ status, category_id, limit }) {
   return result;
 }
 
-async function putProgress({wordId, correct}) {
+async function postword({ english, spanish }) {
+  const [result] = await db.query(
+    'INSERT INTO words (english, spanish) VALUES (?, ?)',
+    [english, spanish]
+  );
+  return result.insertId;
+}
+
+async function getCategories() {
+  const [result] = await db.query(
+    'SELECT * FROM categories ORDER BY created_at DESC'
+  );
+  return result;
+}
+
+async function postCategorie({ name, description}) {
+  const [result] = await db.query(
+    'INSERT INTO categories (name, description) VALUES (?, ?)',
+    [name, description]
+  );
+  return result.insertId;
+}
+
+async function patchProgress({wordId, correct}) {
   const [wordRows] = await pool.query('SELECT times_practiced, times_correct FROM words WHERE id = ?', [wordId]);
 
   let { times_practiced, times_correct } = wordRows[0];
@@ -39,16 +62,10 @@ async function putProgress({wordId, correct}) {
   return result;
 }
 
-async function createConcept({ english, spanish }) {
-  const [result] = await db.query(
-    'INSERT INTO words (english, spanish) VALUES (?, ?)',
-    [english, spanish]
-  );
-  return result.insertId;
-}
-
 module.exports = { 
-  getAllWords,
-  putProgress, 
-  createConcept 
+  getWords,
+  postword,
+  getCategories,
+  postCategorie,
+  patchProgress,
 };

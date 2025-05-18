@@ -6,6 +6,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/', conceptRoutes);
+app.use('/api/', conceptRoutes);
 
 module.exports = app;
