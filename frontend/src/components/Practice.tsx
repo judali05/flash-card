@@ -24,7 +24,7 @@ const Practice = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const statusParam = searchParams.get("status");
-  const categoryParam = searchParams.get("category");
+  const categoryParam = searchParams.get("category_id");
   const limitParam = searchParams.get("limit");
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const Practice = () => {
       try {
         const queryParams = new URLSearchParams();
         if (statusParam) queryParams.append("status", statusParam);
-        if (categoryParam) queryParams.append("category", categoryParam);
+        if (categoryParam) queryParams.append("category_id", categoryParam);
         if (limitParam) queryParams.append("limit", limitParam);
 
         const res = await api.get<Word[]>(`/words?${queryParams.toString()}`);
@@ -43,6 +43,10 @@ const Practice = () => {
         }
 
         setWords(res.data);
+        // Resetear progreso local al cambiar los filtros
+        localStorage.removeItem("shuffledOrder");
+        localStorage.removeItem("currentCardIndex");
+
 
         const savedOrder = localStorage.getItem("shuffledOrder");
         const savedIndex = localStorage.getItem("currentCardIndex");
@@ -76,7 +80,7 @@ const Practice = () => {
     };
 
     fetchWords();
-  }, [statusParam]); // <-- AÑADIDO AQUÍ
+  }, [statusParam, categoryParam, limitParam]);
 
 
   if (loading) {
@@ -117,15 +121,12 @@ const Practice = () => {
     const nextIndex = currentIndex + 1;
 
     if (nextIndex >= words.length) {
-      const newOrder = shuffleArray([...Array(words.length).keys()]);
-      setShuffledOrder(newOrder);
-      setCurrentIndex(0);
-      setUserInput("");
-      setShowFeedback(false);
-      localStorage.setItem("shuffledOrder", JSON.stringify(newOrder));
-      localStorage.setItem("currentCardIndex", "0");
+      localStorage.removeItem("shuffledOrder");
+      localStorage.removeItem("currentCardIndex");
+      navigate("/"); // o a una ruta como /summary si luego haces una vista de resultados
       return;
     }
+
 
     setShowFeedback(false);
     setUserInput("");
@@ -180,23 +181,6 @@ const Practice = () => {
           className="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition"
         >
           Siguiente
-        </button>
-      )}
-
-      {currentIndex >= words.length - 1 && showFeedback && (
-        <button
-          onClick={() => {
-            const newOrder = shuffleArray([...Array(words.length).keys()]);
-            setShuffledOrder(newOrder);
-            setCurrentIndex(0);
-            setUserInput("");
-            setShowFeedback(false);
-            localStorage.setItem("shuffledOrder", JSON.stringify(newOrder));
-            localStorage.setItem("currentCardIndex", "0");
-          }}
-          className="bg-green-600 text-white px-6 py-2 rounded-xl hover:bg-green-700 transition mt-4"
-        >
-          Reiniciar práctica
         </button>
       )}
 

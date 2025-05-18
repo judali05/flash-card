@@ -7,6 +7,7 @@ const Home = () => {
   const [words, setWords] = useState<Word[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [wordLimit, setWordLimit] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -34,6 +35,9 @@ const Home = () => {
     if (selectedCategory !== null) {
       params.append("category_id", String(selectedCategory));
     }
+    if (wordLimit !== null) {
+      params.append("limit", String(wordLimit));
+    }
 
     fetch(`http://localhost:3001/api/words?${params.toString()}`)
       .then((res) => res.json())
@@ -43,8 +47,7 @@ const Home = () => {
         setWords([]);
       })
       .finally(() => setLoading(false));
-  }, [selectedStatus, selectedCategory]);
-
+  }, [selectedStatus, selectedCategory, wordLimit]); // ✅ Agregamos wordLimit a las dependencias
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-blue-50 px-4 py-8">
@@ -53,7 +56,7 @@ const Home = () => {
         Practica vocabulario en inglés con tarjetas interactivas. ¡Mejora tu memoria y diviértete!
       </p>
 
-      {/* Botones de estado (como filtros) */}
+      {/* Botones de estado */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 w-full max-w-2xl">
         {statuses.map((s) => (
           <button
@@ -72,6 +75,7 @@ const Home = () => {
         ))}
       </div>
 
+      {/* Select de categoría */}
       <div className="mb-6 w-full max-w-sm">
         <label className="block text-blue-800 font-semibold mb-1" htmlFor="category">
           Selecciona una categoría:
@@ -81,6 +85,7 @@ const Home = () => {
           value={selectedCategory ?? ""}
           onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
           className="w-full border border-gray-300 rounded-xl p-2"
+          disabled={!selectedStatus} // ✅ Desactivado hasta que se seleccione un status
         >
           <option value="">Todas</option>
           {categories.map((cat) => (
@@ -91,6 +96,29 @@ const Home = () => {
         </select>
       </div>
 
+      {/* Input para límite de palabras */}
+      <div className="mb-6 w-full max-w-sm">
+        <label className="block text-blue-800 font-semibold mb-1" htmlFor="wordLimit">
+          Cantidad de palabras a practicar:
+        </label>
+        <input
+          id="wordLimit"
+          type="number"
+          min={1}
+          placeholder="Ej: 10"
+          value={wordLimit ?? ""}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            if (!isNaN(value) && value > 0) {
+              setWordLimit(value);
+            } else {
+              setWordLimit(null);
+            }
+          }}
+          className="w-full border border-gray-300 rounded-xl p-2"
+          disabled={!selectedStatus} // ✅ Desactivado hasta que se seleccione un status
+        />
+      </div>
 
       {/* Botón de iniciar práctica */}
       <button
@@ -105,6 +133,9 @@ const Home = () => {
           if (selectedCategory !== null) {
             query.category_id = String(selectedCategory);
           }
+          if (wordLimit !== null) {
+            query.limit = String(wordLimit);
+          }
 
           const params = new URLSearchParams(query);
           navigate(`/practice?${params.toString()}`);
@@ -116,7 +147,9 @@ const Home = () => {
       {/* Lista de palabras */}
       {selectedStatus && (
         <div className="w-full max-w-xl">
-          <h2 className="text-xl font-bold mb-2 text-blue-800">Palabras con estado: <span className="capitalize">{selectedStatus.replace("_", " ")}</span></h2>
+          <h2 className="text-xl font-bold mb-2 text-blue-800">
+            Palabras con estado: <span className="capitalize">{selectedStatus.replace("_", " ")}</span>
+          </h2>
           {loading ? (
             <p className="text-gray-600">Cargando palabras...</p>
           ) : words.length > 0 ? (

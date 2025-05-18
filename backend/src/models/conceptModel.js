@@ -15,8 +15,10 @@ async function getWords({ status, category_id, limit }) {
   }
 
   if (limit) {
-    query += ' LIMIT ?';
+    query += 'ORDER BY RAND() LIMIT ?';
     params.push(parseInt(limit));
+  } else {
+    query += 'ORDER BY english ASC'
   }
 
   const [result] = await db.query(query, params);
