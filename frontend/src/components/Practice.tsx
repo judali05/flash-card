@@ -100,7 +100,6 @@ const Practice = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!currentCard) return;
 
     const normalizedUserInput = userInput.trim().toLowerCase();
@@ -111,11 +110,13 @@ const Practice = () => {
     setShowFeedback(true);
 
     try {
-      await api.put(`/words/${currentCard.id}/progress`, { correct });
+      const res = await api.put(`/words/${currentCard.id}/progress`, { correct });
+      console.log("Nuevo estado:", res.data.status); // Opcional: puedes usarlo en UI si lo deseas
     } catch (err) {
       console.error("Error actualizando progreso", err);
     }
   };
+
 
   const handleNext = () => {
     const nextIndex = currentIndex + 1;

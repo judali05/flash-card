@@ -47,15 +47,11 @@ async function addCategorie(req, res) {
 }
 
 async function updateProgress(req, res) {
-    const wordId = req.params.id;
+  const { id } = req.params;
   const { correct } = req.body;
 
   try {
-    if (model.updateProgress(wordRows).length === 0) {
-      return res.status(404).json({ error: 'Palabra no encontrada' });
-    }
-
-    const data = await model.patchProgress({wordId, correct})
+    const data = await model.patchProgress({id, correct})
     res.status(201).json({ data });
   } catch (err) {
     res.status(500).json({ error: 'error when updating the process' });

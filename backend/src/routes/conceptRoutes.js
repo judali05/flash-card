@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/conceptController');
+const db = require('../db');
 
 router.get('/words', controller.takeWords);
 router.post('/word', controller.addWord);
