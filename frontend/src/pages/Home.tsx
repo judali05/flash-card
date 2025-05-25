@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StatusSelector from "../components/StatusSelect";
 import CategorySelector from "../components/CategorySelect";
 import WordLimitInput from "../components/WordLimitInput";
 import PracticeButton from "../components/PracticeButton";
 import WordList from "../components/WordList";
 import { useCategories } from "../hooks/useCategories";
-import { useWords } from "../hooks/useWords";
+import { useWords } from "../hooks/useWordsCount";
 
 const Home = () => {
   const [status, setStatus] = useState<string | null>(null);
@@ -13,7 +13,11 @@ const Home = () => {
   const [limit, setLimit] = useState<number | null>(null);
 
   const categories = useCategories();
-  // const { words, loading } = useWords(status, category, limit);
+  const { words, loading } = useWords(status, category);
+
+  useEffect(() => {
+    setLimit(null);
+  }, [status]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-blue-50 px-4 py-8">
@@ -29,9 +33,8 @@ const Home = () => {
         onChange={setCategory}
         disabled={!status}
       />
-      <WordLimitInput value={limit} onChange={setLimit} disabled={!status} />
+      <WordLimitInput value={limit} onChange={setLimit} words={words} disabled={!status}/>
       <PracticeButton status={status} categoryId={category} limit={limit} />
-      {/* {status && <WordList words={words} loading={loading} status={status} />} */}
     </div>
   );
 };

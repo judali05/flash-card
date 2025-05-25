@@ -25,6 +25,24 @@ async function getWords({ status, category_id, limit }) {
   return result;
 }
 
+async function getWordsCount({ status, category_id }) {
+  let query = 'SELECT * FROM words WHERE 1=1';
+  const params = [];
+
+  if (status) {
+    query += ' AND status = ?';
+    params.push(status);
+  }
+
+  if (category_id) {
+    query += ' AND category_id = ?';
+    params.push(category_id);
+  }
+
+  const [result] = await db.query(query, params);
+  return result;
+}
+
 async function postword({ english, spanish, category_id, description}) {
   const [result] = await db.query(
     'INSERT INTO words (english, spanish, category_id, description) VALUES (?, ?, ?, ?)',
@@ -98,6 +116,7 @@ async function patchProgress({id, correct}) {
 
 module.exports = { 
   getWords,
+  getWordsCount,
   postword,
   getCategories,
   postCategorie,

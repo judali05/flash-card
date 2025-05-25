@@ -1,31 +1,39 @@
+import { Word } from "../types";
+
 interface Props {
   value: number | null;
   onChange: (val: number | null) => void;
+  words: Word[];
   disabled?: boolean;
 }
 
-const WordLimitInput = ({ value, onChange, disabled }: Props) => {
-  const increase = () => {
-    if (typeof value === 'number') {
-      const newValue = Math.min(value + 5, 25)
-      onChange(newValue);
+const WordLimitInput = ({ value, onChange, words, disabled }: Props) => {
+  const lenghtWords = words.length;
+
+  const decrease = () => {
+    if (typeof value !== 'number' || value <= 5) {
+      onChange(null);
     } else {
-      onChange(5);
+      onChange(value - 5);  
     }
   };
 
-  const decrease = () => {
-    if (typeof value !== 'number' || value === 5) {
-      onChange(null);
+  const increase = () => {
+    if (typeof value === 'number') {
+      const maxValue = Math.min(25, lenghtWords);
+      const canIncrease = value + 5 <= maxValue;
+      onChange(canIncrease ? value + 5 : maxValue);
     } else {
-      onChange(value - 5);
+      const initial = lenghtWords >= 5 ? 5 : lenghtWords;
+      onChange(initial);
     }
   };
+
 
   return (
     <div className="mb-6 w-full max-w-sm ">
       <label className="block text-blue-800 font-semibold mb-2" htmlFor="wordLimit">
-        Cantidad de palabras a practicar
+        Cantidad de palabras a practicar {lenghtWords}
       </label>
 
       <div className="flex items-center justify-center gap-2 sm:gap-4">

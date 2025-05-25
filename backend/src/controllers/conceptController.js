@@ -12,6 +12,20 @@ async function takeWords(req, res) {
   }
 }
 
+async function takeWordsCount(req, res) {
+  const { status, category_id } = req.query;
+
+  try {
+    const data = await model.getWordsCount({status, category_id});
+    const count = Array.isArray(data) ? result[0]?.total : 0;
+    res.json({ total: count });
+    res.json(data);
+  } catch (err) {
+    console.error('Error in obtaining filtered words:', err);
+    res.status(500).json({ error: 'Error fetching concepts' });
+  }
+}
+
 async function addWord(req, res) {
   const { english, spanish, category_id, description } = req.body;
   if (!english || !spanish) return res.status(400).json({ error: 'Missing fields' });
@@ -61,6 +75,7 @@ async function updateProgress(req, res) {
 
 module.exports = { 
   takeWords,
+  takeWordsCount,
   addWord, 
   takeCategories,
   addCategorie,
