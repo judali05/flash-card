@@ -1,3 +1,4 @@
+import Button from "./Button";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
@@ -18,15 +19,13 @@ const PracticeButton = ({ status, categoryId, limit }: Props) => {
   };
 
   return (
-    <button
+    <Button
       disabled={!status}
       onClick={handleClick}
-      className={`w-95 bg-blue-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-700 transition mt-4 mb-8 ${
-           !status ? "opacity-50 cursor-not-allowed" : ""
-        }`}
-    >
+      className="w-95 px-6 py-2 mt-4 mb-8" 
+      >
       Comenzar práctica
-    </button>
+    </Button>
   );
 };
 

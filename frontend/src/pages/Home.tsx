@@ -3,7 +3,6 @@ import StatusSelector from "../components/StatusSelect";
 import CategorySelector from "../components/CategorySelect";
 import WordLimitInput from "../components/WordLimitInput";
 import PracticeButton from "../components/PracticeButton";
-import WordList from "../components/WordList";
 import { useCategories } from "../hooks/useCategories";
 import { useWords } from "../hooks/useWordsCount";
 
@@ -13,7 +12,7 @@ const Home = () => {
   const [limit, setLimit] = useState<number | null>(null);
 
   const categories = useCategories();
-  const { words, loading } = useWords(status, category);
+  const { words } = useWords(status, category);
 
   useEffect(() => {
     setLimit(null);
