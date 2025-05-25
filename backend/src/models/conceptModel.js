@@ -25,10 +25,10 @@ async function getWords({ status, category_id, limit }) {
   return result;
 }
 
-async function postword({ english, spanish }) {
+async function postword({ english, spanish, category_id, description}) {
   const [result] = await db.query(
-    'INSERT INTO words (english, spanish) VALUES (?, ?)',
-    [english, spanish]
+    'INSERT INTO words (english, spanish, category_id, description) VALUES (?, ?, ?, ?)',
+    [english, spanish, category_id || null, description || null]
   );
   return result.insertId;
 }

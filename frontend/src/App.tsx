@@ -1,7 +1,7 @@
 // src/App.tsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./components/Home";
-import Practice from "./components/Practice";
+import Home from "./pages/Home";
+import Practice from "./pages/Practice";
 
 function App() {
   return (

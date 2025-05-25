@@ -1,1 +1,11 @@
 @import "tailwindcss";
+@import "tailwindcss/preflight" layer(base);  
+@import "tailwindcss/utilities" layer(utilities);
+
+input:focus,
+select:focus,
+textarea:focus{
+  outline: none;
+  border-radius: 10px;
+  box-shadow: 0 0 0 2px theme(--color-indigo-500);
+}

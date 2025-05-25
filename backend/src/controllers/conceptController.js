@@ -13,11 +13,11 @@ async function takeWords(req, res) {
 }
 
 async function addWord(req, res) {
-  const { english, spanish } = req.body;
+  const { english, spanish, category_id, description } = req.body;
   if (!english || !spanish) return res.status(400).json({ error: 'Missing fields' });
 
   try {
-    const id = await model.postword({ english, spanish });
+    const id = await model.postword({ english, spanish, category_id, description });
     res.status(201).json({ id });
   } catch (err) {
     res.status(500).json({ error: 'Error adding concept' });
