@@ -15,7 +15,6 @@ const StatusSelector = ({ selectedStatus, onSelect }: Props) => (
       <button
         key={s.value}
         className={`flex flex-col items-center justify-center p-4 rounded-xl shadow text-center transition border-2
-          focus:outline-none focus:border-indigo-500 
           ${
             selectedStatus === s.value
               ? "bg-blue-100 border-blue-200"

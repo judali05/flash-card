@@ -48,3 +48,6 @@ Para avanzar de forma sólida, te propongo que trabajemos en **una sesión de pr
 - Mostrar la palabra correcta si falló.
 - Permitir avanzar a la siguiente.
 - Más adelante puedes configurar un proxy en vite.config.ts si deseas omitir http://localhost:3001.
+
+
+**Linguistic Legends**

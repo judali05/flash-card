@@ -10,9 +10,8 @@ export const useWords = (
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!status) return;
-
-    const params = new URLSearchParams({ status });
+    const params = new URLSearchParams();
+    if (status!== null) params.append("status", status);
     if (categoryId !== null) params.append("category_id", String(categoryId));
     if (limit !== null) params.append("limit", String(limit));
 
